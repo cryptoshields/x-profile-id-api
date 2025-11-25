@@ -1,4 +1,4 @@
 fastapi
 uvicorn[standard]
 selenium==4.25.0
-webdriver-manager
+chromedriver-py==142.0.7444.175  # Matches your downloaded version, but uses system path
