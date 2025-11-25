@@ -1,37 +1,40 @@
-import re
-from playwright.async_api import async_playwright
+import httpx
+import json
 
 async def get_profile_id(username: str) -> str | None:
-    username = username.removeprefix("@")
-    url = f"https://x.com/{username}"
+    username = username.strip().lstrip('@')
+    url = f"https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjMg/UserByScreenName"
+    variables = json.dumps({
+        "screen_name": username,
+        "withSafetyModeUserFields": True
+    })
+    features = json.dumps({
+        "hidden_profile_likes_enabled": True,
+        "responsive_web_graphql_exclude_directive_enabled": True
+    })
+    params = {
+        "variables": variables,
+        "features": features
+    }
+    headers = {
+        "Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "X-Twitter-Active-User": "yes",
+        "X-Twitter-Auth-Type": "OAuth2Session",
+        "X-Csrf-Token": "your-csrf-token-here"  # Optional, but add if rate-limited
+    }
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            viewport={"width": 1920, "height": 1080},
-            locale="en-US",
-            timezone_id="America/New_York",
-        )
-        page = await context.new_page()
-
-        # Stealth script
-        await page.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {get: () => false});
-            Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
-            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
-            window.chrome = { runtime: {} };
-        """)
-
-        # Fake cookie to simulate logged-out but real user
-        await context.add_cookies([{"name": "auth_token", "value": "fake", "domain": ".x.com", "path": "/"}])
-
-        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-        await page.wait_for_timeout(5000)  # Wait for dynamic JS load
-
-        content = await page.content()
-        await browser.close()
-
-        # More robust regex for userId in JSON or meta
-        match = re.search(r'"userId"\s*:\s*"(\d+)"', content) or re.search(r'"rest_id"\s*:\s*"(\d+)"', content)
-        return match.group(1) if match else None
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(url, params=params, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                user = data.get("data", {}).get("user", {})
+                profile_id = user.get("rest_id") or user.get("id_str")
+                if profile_id:
+                    print(f"SUCCESS → Profile ID: {profile_id}")
+                    return profile_id
+            print("Timeout: No user_flow.json equivalent found")
+        except Exception as e:
+            print(f"Error: {e}")
+    return None
