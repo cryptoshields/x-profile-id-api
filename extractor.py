@@ -1,10 +1,9 @@
-# extractor.py – RAILWAY BULLETPROOF VERSION (fixes code 127)
+# extractor.py – FIXED FOR SELENIUM 4.25.0 + RAILWAY (no desired_capabilities)
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import WebDriverException
-import time, json, urllib.parse, random, os
+import time, json, urllib.parse, random
 
 def get_profile_id(username: str) -> str | None:
     username = username.strip().lstrip('@')
@@ -35,12 +34,15 @@ def get_profile_id(username: str) -> str | None:
     ]
     options.add_argument(f'--user-agent={random.choice(uas)}')
 
-    # CRITICAL: Disable Selenium Manager + use system chromedriver path
+    # Use system chromedriver path (from nixpacks)
     service = Service(executable_path='/usr/bin/chromedriver')
 
     driver = None
     try:
-        driver = webdriver.Chrome(service=service, options=options, desired_capabilities=DesiredCapabilities.CHROME)
+        print("Starting Chrome driver...")
+        driver = webdriver.Chrome(service=service, options=options)  # No desired_capabilities!
+        print("Driver started successfully!")
+
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                 Object.defineProperty(navigator, 'webdriver', {get: () => false});
@@ -55,7 +57,7 @@ def get_profile_id(username: str) -> str | None:
         print(f"Loading {url}...")
         driver.get(url)
         start = time.time()
-        while time.time() - start < 20:  # Bump timeout slightly
+        while time.time() - start < 20:
             logs = driver.get_log('performance')
             for entry in logs:
                 try:
