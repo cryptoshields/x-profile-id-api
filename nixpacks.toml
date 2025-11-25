@@ -1,7 +1,25 @@
-# nixpacks.toml – Full Selenium/Chrome setup for Railway (Nov 2025)
+# nixpacks.toml – FIXED FOR RAILWAY SELENIUM (full libs + chromedriver Nov 2025)
 [phases.setup]
-  nixPkgs = ['python3', 'chromium', 'chromedriver']
-  aptPkgs = ['libglib2.0-0', 'libnss3', 'libgconf-2-4', 'libfontconfig1', 'libxss1']
+  nixPkgs = ['python3', 'chromium', 'chromedriver', 'gcc']
+  aptPkgs = [
+    'libglib2.0-0',
+    'libnss3',
+    'libgconf-2-4',
+    'libfontconfig1',
+    'libxss1',
+    'libasound2',
+    'libatk-bridge2.0-0',
+    'libgtk-3-0',
+    'libdrm2',
+    'libxcomposite1',
+    'libxdamage1',
+    'libxrandr2',
+    'libgbm1',
+    'libxkbcommon0',
+    'libpango-1.0-0',
+    'libcairo-gobject2',
+    'libatspi2.0-0'
+  ]
 
 [phases.build]
   cmds = ['pip install --no-cache-dir -r requirements.txt']
