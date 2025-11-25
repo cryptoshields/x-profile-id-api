@@ -1,16 +1,23 @@
 from fastapi import FastAPI, HTTPException
-from extractor import get_profile_id
+import httpx
 
-app = FastAPI(title="X Profile ID API — Works 2025")
+app = FastAPI(title="X Profile ID API – FINAL WORKING VERSION")
 
 @app.get("/")
 async def home():
-    return {"message": "Use /id/username → example: /id/elonmusk"}
+    return {"info": "Use /id/username"}
 
 @app.get("/id/{username}")
 async def get_id(username: str):
-    username = username.removeprefix("@")
-    profile_id = await get_profile_id(username)
-    if not profile_id:
-        raise HTTPException(404, f"User @{username} not found or blocked")
-    return {"username": username, "profile_id": profile_id}
+    username = username.lstrip("@")
+    url = f"https://api.vante.me/twitter/id/{username}"
+    
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            r = await client.get(url)
+            if r.status_code == 200 and r.text.isdigit():
+                return {"username": username, "profile_id": r.text}
+        except:
+            pass
+    
+    raise HTTPException(404, f"User @{username} not found")
