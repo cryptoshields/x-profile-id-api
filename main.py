@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from extractor import get_profile_id
 
-app = FastAPI(title="X Profile ID API — Always On")
+app = FastAPI(title="X Profile ID API — Works 2025")
 
 @app.get("/")
 async def home():
