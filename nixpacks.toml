@@ -1,9 +1,10 @@
-# nixpacks.toml – this works 100% on Railway in Nov 2025
+# nixpacks.toml – Full Selenium/Chrome setup for Railway (Nov 2025)
 [phases.setup]
-  nixPkgs = ["python312", "chromium"]
+  nixPkgs = ['python3', 'chromium', 'chromedriver']
+  aptPkgs = ['libglib2.0-0', 'libnss3', 'libgconf-2-4', 'libfontconfig1', 'libxss1']
 
 [phases.build]
-  cmds = ["pip install --no-cache-dir -r requirements.txt"]
+  cmds = ['pip install --no-cache-dir -r requirements.txt']
 
 [start]
-  cmd = "uvicorn main:app --host 0.0.0.0 --port ${PORT}"
+  cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
