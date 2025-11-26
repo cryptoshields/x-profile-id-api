@@ -1,4 +1,3 @@
 fastapi
 uvicorn[standard]
 httpx
-re  # Built-in, but for clarity
