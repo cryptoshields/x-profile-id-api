@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from extractor import get_profile_id
 
-app = FastAPI(title="X Profile ID API – Working!")
+app = FastAPI(title="X Profile ID API")
 
 @app.get("/")
 async def home():
-    return {"message": "Use /id/username → example: /id/elonmusk"}
+    return {"message": "Use /id/username (e.g., /id/elonmusk)"}
 
 @app.get("/id/{username}")
 async def get_id(username: str):
